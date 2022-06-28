@@ -11,7 +11,15 @@ class Genre(models.Model):
     slug = models.SlugField()
 
 
-class Titles(models.Model):
+class Comment(models.Model):
+    pass
+
+
+class Review(models.Model):
+    pass
+
+
+class Title(models.Model):
     name = models.CharField(max_length=200)
     year = models.DateField()
     description = models.CharField(max_length=200)
@@ -28,4 +36,10 @@ class Titles(models.Model):
         blank=True,
         null=True,
         related_name='titles'
+    )
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
     )

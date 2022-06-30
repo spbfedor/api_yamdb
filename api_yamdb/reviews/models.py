@@ -1,10 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
-#TODO Импортировать классы проверки полей
+from django.core.validators import RegexValidator
 
 # Импорт настроек длины полей и кода из settings
 from api_yamdb.settings import CODE_LENGTH, EMAIL_LENGTH, USERNAME_LENGTH
+
+# Проверка имени пользователя
+class Validator(RegexValidator):
+    regex = r'^[\w.@+-]+$'
+    flags = 0
+
 
 # Кастомный класс
 class User(AbstractUser):
@@ -24,15 +29,17 @@ class User(AbstractUser):
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=USERNAME_LENGTH,
-        unique=True
-        #TODO Сделать валидацию имени пользователя
+        unique=True,
+        validators=[Validator()],
     )
+
     email = models.EmailField(
         verbose_name='Электронная почта',
         max_length=EMAIL_LENGTH,
         blank=False,
         unique=True
     )
+
     first_name = models.CharField(
         verbose_name='Имя',
         max_length=150,
@@ -55,7 +62,6 @@ class User(AbstractUser):
         max_length=CODE_LENGTH,
         blank=True,
         null=True
-        #TODO Сделать валидацию кода подтверждения
     )
 
     # Проверка прав на соответствие роли
@@ -70,7 +76,7 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return (self.role == self.ADMIN_ROLE
-                or self.is_staff)
+                or self.is_superuser)
 
     class Meta:
         verbose_name = 'Пользователь'

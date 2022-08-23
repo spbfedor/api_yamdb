@@ -23,6 +23,16 @@ class User(AbstractUser):
         unique=True,
         verbose_name='Имя пользователя'
     )
+
+    @property
+    def user_name(self):
+        """Username property"""
+        return self.username
+
+    @user_name.setter
+    def user_name(self, value):
+        self.username = value
+
     email = models.EmailField(
         max_length=254,
         unique=True,
@@ -33,11 +43,31 @@ class User(AbstractUser):
         verbose_name='Имя',
         null=True
     )
+
+    @property
+    def firstname(self):
+        """First_name property"""
+        return self.first_name
+
+    @firstname.setter
+    def firstname(self, value):
+        self.first_name = value
+
     last_name = models.CharField(
         max_length=150,
         verbose_name='Фамилия',
         null=True
     )
+
+    @property
+    def lastname(self):
+        """Last_name property"""
+        return self.last_name
+
+    @lastname.setter
+    def lastname(self, value):
+        self.last_name = value
+
     bio = models.TextField(
         max_length=500,
         blank=True,
@@ -46,13 +76,14 @@ class User(AbstractUser):
     role = models.CharField(
         max_length=20,
         choices=ROLES.get_roles(),
-        default='user',
+        default=ROLES.user,
         verbose_name='Роль'
     )
     confirmation_code = models.CharField(
         max_length=50,
         default=''
     )
+
     USERNAME_FIELD = 'username'
 
     class Meta:

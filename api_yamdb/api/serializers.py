@@ -20,7 +20,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug',)
+        exclude = ('id',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -36,7 +36,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = ('name', 'slug',)
+        exclude = ('id',)
 
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
@@ -103,7 +103,7 @@ class RegisterSerializer(serializers.Serializer):
         fields = ('username', 'email')
 
     def validate_username(self, value):
-        if value == "me":
+        if value == "me".casefold():
             raise serializers.ValidationError(
                 'Вы не можете использовать "me" '
                 'в качестве имени пользователя.'
@@ -144,18 +144,9 @@ class UsersManageSerializer(serializers.ModelSerializer):
         )
 
 
-class SelfProfileSerializer(serializers.ModelSerializer):
+class SelfProfileSerializer(UsersManageSerializer):
 
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'bio',
-            'role',
-        )
+    class Meta(UsersManageSerializer.Meta):
         read_only_fields = ('role',)
 
 

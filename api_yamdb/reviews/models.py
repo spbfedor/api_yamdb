@@ -6,7 +6,11 @@ from users.models import User
 
 
 class Category(models.Model):
-    name = models.CharField('имя категории', max_length=256)
+    name = models.CharField(
+        'имя категории',
+        max_length=256,
+        db_index=True
+    )
     slug = models.SlugField(max_length=50, unique=True)
 
     class Meta:
@@ -19,7 +23,11 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField('имя жанра', max_length=256)
+    name = models.CharField(
+        'имя жанра',
+        max_length=256,
+        db_index=True
+    )
     slug = models.SlugField(max_length=50, unique=True)
 
     class Meta:
@@ -32,13 +40,17 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField('название', max_length=256)
+    name = models.CharField(
+        'название',
+        max_length=256,
+        db_index=True
+    )
     year = models.PositiveSmallIntegerField(
         'год выпуска',
         validators=[validate_not_future_year],
     )
     description = models.TextField('описание', blank=True, default='')
-    genre = models.ManyToManyField(Genre, through='GenreTitle')
+    genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
         Category,
         related_name='titles',
@@ -61,14 +73,6 @@ class Title(models.Model):
         return self.name[:15]
 
 
-class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f'{self.genre} {self.title}'
-
-
 class Review(models.Model):
     text = models.TextField('текст отзыва')
     author = models.ForeignKey(
@@ -78,7 +82,10 @@ class Review(models.Model):
     )
     score = models.PositiveSmallIntegerField(
         'оценка',
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
+        validators=[
+            MinValueValidator(1, 'минимальная оценка'),
+            MaxValueValidator(10, 'максимальная оценка')
+        ]
     )
     pub_date = models.DateTimeField('дата', auto_now_add=True)
     title = models.ForeignKey(

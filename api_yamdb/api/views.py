@@ -53,28 +53,26 @@ class RegisterViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     def perform_create(self, serializer):
         try:
-            user, created = (
-                User.objects.get_or_create(
-                    **serializer.validated_data,
-                    defaults={
-                        'confirmation_code':
-                        self.generate_code()
-                    }
-                )
-            )
+            user, created = (User.objects.
+                             get_or_create(**serializer.validated_data,
+                                           defaults={'confirmation_code':
+                                                     self.generate_code()
+                                                     }
+                                           )
+                             )
             return user
         except IntegrityError as e:
             field = str(e.__cause__).split('.')[1]
-            raise serializers.ValidationError(
-                f'Пользователь с таким {field} уже существует.'
-            )
+            raise serializers.ValidationError(f'Пользователь с таким {field} '
+                                              'уже существует.')
 
 
 @api_view(["POST"])
 def obtain_token(request):
+
     serializer = ObtainTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    username = serializer.data.get('username')
+    username = serializer.validated_data.get('username')
     user = get_object_or_404(User, username=username)
     token = RefreshToken.for_user(user).access_token
     return Response({'token': str(token)}, status=status.HTTP_200_OK)
@@ -97,21 +95,20 @@ class UsersManageViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def me(self, request):
-        profile = get_object_or_404(User, pk=request.user.id)
+        profile = request.user
         if request.method == "GET":
             serializer = SelfProfileSerializer(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = SelfProfileSerializer(
-            request.user,
-            data=self.request.data,
-            partial=True
+            request.user, data=self.request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        serializer.save()
         return Response(serializer.data)
 
 
 class SlugNameViewSet(ListCreateDestroyViewSet):
+
     lookup_field = 'slug'
     permission_classes = (
         IsAdminOrReadOnly,
